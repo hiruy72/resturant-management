@@ -28,9 +28,5 @@ cd ../frontend
 npm run dev
 ```
 
-## Notes
-- `node_modules/` is ignored — do not commit dependencies.
-- To push changes, use `git push` (or create a branch and open a PR).
-
 ## License
 MIT

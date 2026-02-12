@@ -7,6 +7,7 @@
     --accent: #FFC107;
     /* Gold/Yellow for highlights */
     --background: #F9F9F9;
+    --background-alt: #F3F4F6;
     --surface: #FFFFFF;
     --text: #1F2937;
     --text-light: #6B7280;
@@ -20,6 +21,7 @@
 
 [data-theme='dark'] {
     --background: #121212;
+    --background-alt: #1F1F1F;
     --surface: #1E1E1E;
     --text: #F3F4F6;
     --text-light: #9CA3AF;
@@ -39,6 +41,16 @@ body {
     color: var(--text);
     line-height: 1.5;
     transition: background-color 0.3s ease, color 0.3s ease;
+    margin: 0;
+    padding: 0;
+}
+
+.app {
+    min-height: 100vh;
+}
+
+.main-content {
+    position: relative;
 }
 
 h1,

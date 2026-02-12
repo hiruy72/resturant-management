@@ -1,7 +1,33 @@
+//  FRONTEND: Cart.jsx
+// await api.post('/orders', {
+//     items: orderItems,
+//     totalPrice,
+//     delivery_address: deliveryAddress,
+//     phone: phone
+// });
+
+// ↓ VITE PROXY REDIRECTS
+// FROM: http://localhost:5173/api/orders
+// TO:   http://localhost:5000/api/orders
+
+//  BACKEND: server.js receives request
+// POST /api/orders
+// Headers: {
+//     'Content-Type': 'application/json',
+//     'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIs...'
+// }
+// Body: {
+//     "items": [...],
+//     "totalPrice": 31.98,
+//     "delivery_address": "123 Main St",
+//     "phone": "555-1234"
+// }
+
+
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: '/api', // Proxy will handle this to localhost:5000
+    baseURL: '/api', // Proxy will handle this to localhost:5000 // all request go to /api
     headers: {
         'Content-Type': 'application/json',
     },

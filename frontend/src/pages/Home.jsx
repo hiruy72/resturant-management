@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function Home() {
     const [featuredItems, setFeaturedItems] = useState([]);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchFeatured = async () => {
@@ -22,17 +24,20 @@ export default function Home() {
         <div className="home">
             <section className="hero" style={{
                 textAlign: 'center',
-                padding: '4rem 1rem',
+                padding: '2rem 1rem',
                 background: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
                 color: 'white',
-                minHeight: '60vh',
+                height: '100vh',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                borderRadius: '0 0 var(--radius) var(--radius)'
+                position: 'relative',
+                marginTop: '-80px', // Offset for navbar height
+                paddingTop: '80px'   // Add padding to account for navbar
             }}>
                 <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
                     Taste the Extraordinary
@@ -40,18 +45,20 @@ export default function Home() {
                 <p style={{ fontSize: '1.25rem', marginBottom: '2rem', maxWidth: '600px', opacity: 0.9 }}>
                     Experience culinary mastery with our premium selection of dishes. Fresh ingredients, unforgettable flavors.
                 </p>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <Link to="/menu" className="btn btn-primary" style={{ padding: '0.9rem 2rem', fontSize: '1.1rem' }}>
                         View Menu
                     </Link>
-                    <Link to="/register" className="btn" style={{
-                        background: 'white',
-                        color: 'black',
-                        padding: '0.9rem 2rem',
-                        fontSize: '1.1rem'
-                    }}>
-                        Join Us
-                    </Link>
+                    {!user && (
+                        <Link to="/register" className="btn" style={{
+                            background: 'white',
+                            color: 'black',
+                            padding: '0.9rem 2rem',
+                            fontSize: '1.1rem'
+                        }}>
+                            Join Us
+                        </Link>
+                    )}
                 </div>
             </section>
 
@@ -89,7 +96,7 @@ export default function Home() {
                 <div className="container" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4rem' }}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
                         <img
-                            src="https://images.unsplash.com/photo-1583394838336-acd977736f90?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                            src="https://plus.unsplash.com/premium_photo-1661778091956-15dbe6e47442?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2hlZnxlbnwwfHwwfHx8MA%3D%3D"
                             alt="Head Chef"
                             style={{ width: '100%', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-lg)' }}
                         />

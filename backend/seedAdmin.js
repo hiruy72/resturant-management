@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const User = require('./src/models/User');
@@ -7,11 +6,10 @@ dotenv.config();
 
 const seedAdmin = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log('MongoDB Connected');
+        console.log('Connecting to PostgreSQL...');
 
         const adminEmail = 'admin@restaurant.com';
-        const userExists = await User.findOne({ email: adminEmail });
+        const userExists = await User.findByEmail(adminEmail);
 
         if (userExists) {
             console.log('Admin user already exists');
@@ -31,7 +29,7 @@ const seedAdmin = async () => {
         console.log('Admin user created successfully');
         process.exit();
     } catch (error) {
-        console.error(error);
+        console.error('Error creating admin user:', error);
         process.exit(1);
     }
 };

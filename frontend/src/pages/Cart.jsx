@@ -12,6 +12,8 @@ export default function Cart() {
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [ordering, setOrdering] = useState(false);
+    const [deliveryAddress, setDeliveryAddress] = useState('');
+    const [phone, setPhone] = useState('');
 
     const handleCheckout = async () => {
         if (!user) {
@@ -19,24 +21,33 @@ export default function Cart() {
             return;
         }
 
+        if (!deliveryAddress.trim() || !phone.trim()) {
+            showNotification('Please provide delivery address and phone number.', 'error');
+            return;
+        }
+
         setOrdering(true);
         try {
             const orderItems = cart.map(item => ({
-                menuItem: item._id,
-                quantity: item.quantity
+                menu_item_id: item.id || item._id, // Handle both id formats
+                quantity: item.quantity,
+                price: item.price
             }));
 
             await api.post('/orders', {
                 items: orderItems,
-                totalPrice
+                totalPrice,
+                delivery_address: deliveryAddress,
+                phone: phone
             });
 
             clearCart();
             showNotification('Order placed successfully! We hope you enjoy your meal.');
             navigate('/orders');
         } catch (err) {
-            console.error(err);
-            showNotification('Failed to place order. Please check your connection and try again.', 'error');
+            console.error('Order placement error:', err);
+            const errorMessage = err.response?.data?.message || 'Failed to place order. Please check your connection and try again.';
+            showNotification(errorMessage, 'error');
         } finally {
             setOrdering(false);
         }
@@ -58,14 +69,14 @@ export default function Cart() {
 
             <div className="card">
                 {cart.map((item) => (
-                    <div key={item._id} style={{ display: 'flex', gap: '1rem', padding: '1rem 0', borderBottom: '1px solid var(--border)' }}>
+                    <div key={item.id || item._id} style={{ display: 'flex', gap: '1rem', padding: '1rem 0', borderBottom: '1px solid var(--border)' }}>
                         {/* Thumbnail if available */}
                         <div style={{ width: '80px', height: '80px', background: '#eee', borderRadius: '8px', backgroundImage: `url(${item.image || ''})`, backgroundSize: 'cover' }}></div>
 
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                 <h3 style={{ fontSize: '1.1rem' }}>{item.name}</h3>
-                                <button onClick={() => removeFromCart(item._id)} style={{ background: 'none', border: 'none', color: '#EF4444' }}>
+                                <button onClick={() => removeFromCart(item.id || item._id)} style={{ background: 'none', border: 'none', color: '#EF4444' }}>
                                     <Trash2 size={18} />
                                 </button>
                             </div>
@@ -75,13 +86,13 @@ export default function Cart() {
                                 <button
                                     className="btn btn-outline"
                                     style={{ padding: '0.25rem 0.5rem' }}
-                                    onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                                    onClick={() => updateQuantity(item.id || item._id, item.quantity - 1)}
                                 >-</button>
                                 <span>{item.quantity}</span>
                                 <button
                                     className="btn btn-outline"
                                     style={{ padding: '0.25rem 0.5rem' }}
-                                    onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                                    onClick={() => updateQuantity(item.id || item._id, item.quantity + 1)}
                                 >+</button>
                             </div>
                         </div>
@@ -89,6 +100,48 @@ export default function Cart() {
                 ))}
 
                 <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '2px dashed var(--border)' }}>
+                    {/* Delivery Information Form */}
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <h3 style={{ marginBottom: '1rem' }}>Delivery Information</h3>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                Delivery Address *
+                            </label>
+                            <textarea
+                                value={deliveryAddress}
+                                onChange={(e) => setDeliveryAddress(e.target.value)}
+                                placeholder="Enter your full delivery address"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '8px',
+                                    resize: 'vertical',
+                                    minHeight: '80px'
+                                }}
+                                required
+                            />
+                        </div>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                Phone Number *
+                            </label>
+                            <input
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                placeholder="Enter your phone number"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '8px'
+                                }}
+                                required
+                            />
+                        </div>
+                    </div>
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>
                         <span>Total</span>
                         <span>${totalPrice.toFixed(2)}</span>

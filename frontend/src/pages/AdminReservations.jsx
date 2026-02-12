@@ -25,7 +25,7 @@ export default function AdminReservations() {
             await api.put(`/reservations/${id}`, { status: newStatus });
             // Optimistic update or refetch
             setReservations(reservations.map(res =>
-                res._id === id ? { ...res, status: newStatus } : res
+                res.id === id ? { ...res, status: newStatus } : res
             ));
             alert(`Reservation ${newStatus}`);
         } catch (error) {
@@ -53,40 +53,41 @@ export default function AdminReservations() {
                     </thead>
                     <tbody>
                         {reservations.map(res => (
-                            <tr key={res._id} style={{ borderBottom: '1px solid var(--border)' }}>
+                            <tr key={res.id} style={{ borderBottom: '1px solid var(--border)' }}>
                                 <td style={{ padding: '1rem' }}>
                                     {res.name}
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{res.user?.email}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{res.email}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{res.phone}</div>
                                 </td>
                                 <td style={{ padding: '1rem' }}>
-                                    {res.date} <br /> {res.time}
+                                    {new Date(res.date).toLocaleDateString()} <br /> {res.time}
                                 </td>
-                                <td style={{ padding: '1rem' }}>{res.guests}</td>
+                                <td style={{ padding: '1rem' }}>{res.guests} {res.guests === 1 ? 'person' : 'people'}</td>
                                 <td style={{ padding: '1rem', maxWidth: '200px' }}>
-                                    {res.specialRequest || <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>None</span>}
+                                    {res.special_requests || <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>None</span>}
                                 </td>
                                 <td style={{ padding: '1rem' }}>
                                     <span style={{
                                         padding: '0.25rem 0.5rem',
                                         borderRadius: '4px',
                                         fontSize: '0.85rem',
-                                        background: res.status === 'Confirmed' ? '#D1FAE5' : res.status === 'Cancelled' ? '#FEE2E2' : '#FEF3C7',
-                                        color: res.status === 'Confirmed' ? '#065F46' : res.status === 'Cancelled' ? '#991B1B' : '#92400E'
+                                        background: res.status === 'confirmed' ? '#D1FAE5' : res.status === 'cancelled' ? '#FEE2E2' : '#FEF3C7',
+                                        color: res.status === 'confirmed' ? '#065F46' : res.status === 'cancelled' ? '#991B1B' : '#92400E'
                                     }}>
-                                        {res.status}
+                                        {res.status.charAt(0).toUpperCase() + res.status.slice(1)}
                                     </span>
                                 </td>
                                 <td style={{ padding: '1rem' }}>
-                                    {res.status === 'Pending' && (
+                                    {res.status === 'pending' && (
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button
-                                                onClick={() => handleStatusUpdate(res._id, 'Confirmed')}
+                                                onClick={() => handleStatusUpdate(res.id, 'confirmed')}
                                                 style={{ padding: '0.5rem', background: '#10B981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                                             >
                                                 Confirm
                                             </button>
                                             <button
-                                                onClick={() => handleStatusUpdate(res._id, 'Cancelled')}
+                                                onClick={() => handleStatusUpdate(res.id, 'cancelled')}
                                                 style={{ padding: '0.5rem', background: '#EF4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                                             >
                                                 Cancel

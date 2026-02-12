@@ -40,17 +40,17 @@ export default function MyReservations() {
             ) : (
                 <div style={{ display: 'grid', gap: '1.5rem' }}>
                     {reservations.map((res) => (
-                        <div key={res._id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', borderLeft: '4px solid var(--primary)' }}>
+                        <div key={res.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', borderLeft: '4px solid var(--primary)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <h3 style={{ margin: 0 }}>{res.name}</h3>
                                 <span style={{
                                     padding: '0.25rem 0.75rem',
                                     borderRadius: '20px',
                                     fontSize: '0.8rem',
-                                    background: res.status === 'Confirmed' ? '#D1FAE5' : '#FEF3C7',
-                                    color: res.status === 'Confirmed' ? '#065F46' : '#92400E'
+                                    background: res.status === 'confirmed' ? '#D1FAE5' : res.status === 'cancelled' ? '#FEE2E2' : '#FEF3C7',
+                                    color: res.status === 'confirmed' ? '#065F46' : res.status === 'cancelled' ? '#991B1B' : '#92400E'
                                 }}>
-                                    {res.status}
+                                    {res.status.charAt(0).toUpperCase() + res.status.slice(1)}
                                 </span>
                             </div>
                             <div style={{ display: 'flex', gap: '2rem', marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.9rem' }}>
@@ -64,14 +64,17 @@ export default function MyReservations() {
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <Users size={16} />
-                                    <span>{res.guests}</span>
+                                    <span>{res.guests} {res.guests === 1 ? 'person' : 'people'}</span>
                                 </div>
                             </div>
-                            {res.specialRequest && (
+                            {res.special_requests && (
                                 <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--background)', borderRadius: 'var(--radius)', border: '1px dashed var(--border)', fontSize: '0.9rem' }}>
-                                    <strong>Note:</strong> {res.specialRequest}
+                                    <strong>Special Requests:</strong> {res.special_requests}
                                 </div>
                             )}
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-light)' }}>
+                                <strong>Contact:</strong> {res.email} • {res.phone}
+                            </div>
                         </div>
                     ))}
                 </div>

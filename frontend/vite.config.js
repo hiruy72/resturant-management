@@ -14,3 +14,7 @@ export default defineConfig({
     }
   }
 })
+
+// 2. VITE PROXY CONFIGURATION
+// When frontend makes request to '/api/orders'
+// Vite proxy redirects it to 'http://localhost:5000/api/orders'

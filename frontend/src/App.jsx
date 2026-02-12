@@ -13,6 +13,7 @@ import Contact from './pages/Contact';
 import FeatureDetail from './pages/FeatureDetail';
 import MyReservations from './pages/MyReservations';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminMenu from './pages/AdminMenu';
 
 import { NotificationProvider } from './context/NotificationContext';
 import NotificationModal from './components/NotificationModal';
@@ -38,6 +39,7 @@ function App() {
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/my-reservations" element={<MyReservations />} />
                   <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/menu" element={<AdminMenu />} />
                 </Routes>
               </main>
             </div>

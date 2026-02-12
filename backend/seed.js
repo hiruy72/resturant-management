@@ -1,8 +1,11 @@
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const MenuItem = require('./src/models/MenuItem');
+const { pool } = require('./src/config/db');
+const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
+
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
 
 const menuItems = [
     {
@@ -114,18 +117,30 @@ const menuItems = [
 
 const seedDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log('Connected to DB');
+        console.log('Connecting to PostgreSQL...');
+        
+        // Create tables first
+        const schemaPath = path.join(__dirname, 'src', 'models', 'schema.sql');
+        const schema = fs.readFileSync(schemaPath, 'utf8');
+        await pool.query(schema);
+        console.log('Database schema created/updated');
 
-        await MenuItem.deleteMany({});
+        // Clear existing menu items
+        await pool.query('DELETE FROM menu_items');
         console.log('Cleared existing menu items');
 
-        await MenuItem.insertMany(menuItems);
+        // Insert menu items
+        for (const item of menuItems) {
+            await pool.query(
+                'INSERT INTO menu_items (name, description, price, category, image, available) VALUES ($1, $2, $3, $4, $5, $6)',
+                [item.name, item.description, item.price, item.category, item.image, true]
+            );
+        }
+        
         console.log('Added 15 menu items');
-
         process.exit();
     } catch (error) {
-        console.error(error);
+        console.error('Error seeding database:', error);
         process.exit(1);
     }
 };

@@ -42,7 +42,7 @@ export default function AdminDashboard() {
     const handleReservationStatus = async (id, status) => {
         try {
             await api.put(`/reservations/${id}`, { status });
-            setReservations(prev => prev.map(r => r._id === id ? { ...r, status } : r));
+            setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
             showNotification(`Reservation ${status} successfully!`);
         } catch (error) {
             console.error('Error updating reservation:', error);
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
     const handleOrderStatus = async (id, status) => {
         try {
             await api.put(`/orders/${id}`, { status });
-            setOrders(prev => prev.map(o => o._id === id ? { ...o, status } : o));
+            setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
             showNotification(`Order ${status} successfully!`);
         } catch (error) {
             console.error('Error updating order:', error);
@@ -68,6 +68,21 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Admin Dashboard</h1>
                 <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button
+                        onClick={() => navigate('/admin/menu')}
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background: 'var(--accent)',
+                            color: 'var(--text)',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        🍽️ Manage Menu
+                    </button>
                     <button
                         onClick={() => setActiveTab('reservations')}
                         style={{
@@ -138,33 +153,34 @@ export default function AdminDashboard() {
                             <tbody>
                                 {activeTab === 'reservations' ? (
                                     reservations.map(res => (
-                                        <tr key={res._id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                        <tr key={res.id} style={{ borderBottom: '1px solid var(--border)' }}>
                                             <td style={tdStyle}>
                                                 <div style={{ fontWeight: '500' }}>{res.name}</div>
-                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{res.user?.email}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{res.email}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{res.phone}</div>
                                             </td>
                                             <td style={tdStyle}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <Calendar size={14} /> {res.date}
+                                                    <Calendar size={14} /> {new Date(res.date).toLocaleDateString()}
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', color: 'var(--text-light)' }}>
                                                     <Clock size={14} /> {res.time}
                                                 </div>
                                             </td>
-                                            <td style={tdStyle}>{res.guests} ppl</td>
+                                            <td style={tdStyle}>{res.guests} {res.guests === 1 ? 'person' : 'people'}</td>
                                             <td style={{ ...tdStyle, maxWidth: '200px' }}>
-                                                {res.specialRequest ? (
-                                                    <span style={{ fontSize: '0.9rem' }}>{res.specialRequest}</span>
+                                                {res.special_requests ? (
+                                                    <span style={{ fontSize: '0.9rem' }}>{res.special_requests}</span>
                                                 ) : <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>-</span>}
                                             </td>
                                             <td style={tdStyle}>
                                                 <StatusBadge status={res.status} />
                                             </td>
                                             <td style={tdStyle}>
-                                                {res.status === 'Pending' && (
+                                                {res.status === 'pending' && (
                                                     <ActionButtons
-                                                        onConfirm={() => handleReservationStatus(res._id, 'Confirmed')}
-                                                        onCancel={() => handleReservationStatus(res._id, 'Cancelled')}
+                                                        onConfirm={() => handleReservationStatus(res.id, 'confirmed')}
+                                                        onCancel={() => handleReservationStatus(res.id, 'cancelled')}
                                                     />
                                                 )}
                                             </td>
@@ -172,23 +188,27 @@ export default function AdminDashboard() {
                                     ))
                                 ) : (
                                     orders.map(order => (
-                                        <tr key={order._id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                        <tr key={order.id} style={{ borderBottom: '1px solid var(--border)' }}>
                                             <td style={tdStyle}>
-                                                <div style={{ fontWeight: '500' }}>{order.user?.name || 'Unknown'}</div>
-                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{order.user?.email}</div>
+                                                <div style={{ fontWeight: '500' }}>{order.user_name || 'Unknown'}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{order.user_email}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{order.phone}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
+                                                    <strong>Address:</strong> {order.delivery_address}
+                                                </div>
                                             </td>
                                             <td style={tdStyle}>
                                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                                    {order.items.map((item, idx) => (
+                                                    {order.items && order.items.map((item, idx) => (
                                                         <li key={idx} style={{ fontSize: '0.9rem' }}>
-                                                            {item.quantity}x {item.menuItem?.name || 'Item'}
+                                                            {item.quantity}x {item.item_name || 'Item'} - ${item.price}
                                                         </li>
                                                     ))}
                                                 </ul>
                                             </td>
                                             <td style={tdStyle}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: '600' }}>
-                                                    <DollarSign size={14} /> {order.totalPrice.toFixed(2)}
+                                                    <DollarSign size={14} /> {order.total_amount}
                                                 </div>
                                             </td>
                                             <td style={tdStyle}>
@@ -197,9 +217,9 @@ export default function AdminDashboard() {
                                             <td style={tdStyle}>
                                                 {order.status === 'pending' && (
                                                     <ActionButtons
-                                                        onConfirm={() => handleOrderStatus(order._id, 'completed')}
+                                                        onConfirm={() => handleOrderStatus(order.id, 'delivered')}
                                                         confirmText="Complete"
-                                                        onCancel={() => handleOrderStatus(order._id, 'cancelled')}
+                                                        onCancel={() => handleOrderStatus(order.id, 'cancelled')}
                                                     />
                                                 )}
                                             </td>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -9,16 +9,30 @@ export default function Contact() {
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [formData, setFormData] = useState({
-        name: user ? user.name : '',
+        name: '',
+        email: '',
+        phone: '',
         date: '',
         time: '',
-        guests: '2 People',
-        specialRequest: ''
+        guests: 2,
+        special_requests: ''
     });
     const [loading, setLoading] = useState(false);
 
+    // Update form data when user changes
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                name: user.name || '',
+                email: user.email || ''
+            }));
+        }
+    }, [user]);
+
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const value = e.target.name === 'guests' ? parseInt(e.target.value) : e.target.value;
+        setFormData({ ...formData, [e.target.name]: value });
     };
 
     const handleSubmit = async (e) => {
@@ -28,14 +42,28 @@ export default function Contact() {
             return;
         }
 
+        // Validate required fields
+        if (!formData.email || !formData.phone || !formData.date || !formData.time) {
+            showNotification('Please fill in all required fields.', 'error');
+            return;
+        }
+
         setLoading(true);
 
         try {
+            console.log('Sending reservation data:', formData);
             await api.post('/reservations', formData);
             showNotification('Reservation confirmed! We look forward to seeing you.');
-            setFormData(prev => ({ ...prev, date: '', time: '', guests: '2 People', specialRequest: '' }));
+            setFormData(prev => ({ 
+                ...prev, 
+                phone: '',
+                date: '', 
+                time: '', 
+                guests: 2, 
+                special_requests: '' 
+            }));
         } catch (error) {
-            console.error(error);
+            console.error('Reservation error:', error);
             const errorMsg = error.response?.data?.message || 'Failed to make reservation. Please try again.';
             showNotification(errorMsg, 'error');
         } finally {
@@ -104,7 +132,7 @@ export default function Contact() {
                             <>
                                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Name</label>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Name *</label>
                                         <input
                                             type="text"
                                             name="name"
@@ -114,20 +142,44 @@ export default function Contact() {
                                             style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)' }}
                                         />
                                     </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Email *</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            required
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Phone Number *</label>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            placeholder="Enter your phone number"
+                                            required
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)' }}
+                                        />
+                                    </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <div>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Date</label>
+                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Date *</label>
                                             <input
                                                 type="date"
                                                 name="date"
                                                 value={formData.date}
                                                 onChange={handleChange}
+                                                min={new Date().toISOString().split('T')[0]}
                                                 required
                                                 style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)' }}
                                             />
                                         </div>
                                         <div>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Time</label>
+                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Time *</label>
                                             <input
                                                 type="time"
                                                 name="time"
@@ -139,26 +191,31 @@ export default function Contact() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Guests</label>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Number of Guests *</label>
                                         <select
                                             name="guests"
                                             value={formData.guests}
                                             onChange={handleChange}
+                                            required
                                             style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)' }}
                                         >
-                                            <option>2 People</option>
-                                            <option>3 People</option>
-                                            <option>4 People</option>
-                                            <option>5+ People</option>
+                                            <option value={1}>1 Person</option>
+                                            <option value={2}>2 People</option>
+                                            <option value={3}>3 People</option>
+                                            <option value={4}>4 People</option>
+                                            <option value={5}>5 People</option>
+                                            <option value={6}>6 People</option>
+                                            <option value={7}>7 People</option>
+                                            <option value={8}>8+ People</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Special Request / Pre-order Food</label>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Special Requests</label>
                                         <textarea
-                                            name="specialRequest"
-                                            value={formData.specialRequest}
+                                            name="special_requests"
+                                            value={formData.special_requests}
                                             onChange={handleChange}
-                                            placeholder="e.g. I would like to pre-order the Grilled Salmon..."
+                                            placeholder="Any special requests or dietary requirements..."
                                             rows="3"
                                             style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)', resize: 'vertical' }}
                                         />

@@ -15,7 +15,7 @@ exports.sendContactEmail = async (req, res) => {
 
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER, // Sending to self/admin for now
+        to: process.env.EMAIL_USER,       // Sending to self/admin for now
         subject: `New Reservation Request from ${name}`,
         text: `
             New Reservation Details:

@@ -1,10 +1,21 @@
 const jwt = require('jsonwebtoken');
 
+// Helper function to send JSON response
+const sendJSON = (res, statusCode, data) => {
+    res.writeHead(statusCode, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    });
+    res.end(JSON.stringify(data));
+};
+
 exports.protect = (req, res, next) => {
     let token = req.headers.authorization;
 
     if(!token || !token.startsWith('Bearer')) {
-         return res.status(401).json({ message: 'Not authorized' });
+         return sendJSON(res, 401, { message: 'Not authorized' });
     }
 
     token = token.split(' ')[1];
@@ -14,14 +25,13 @@ exports.protect = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        res.status(401).json({ message: 'Token invalid' });
+        sendJSON(res, 401, { message: 'Token invalid' });
     }
 };
 
 exports.adminOnly = (req, res, next) => {
     if (req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Admin access only' });
+        return sendJSON(res, 403, { message: 'Admin access only' });
     }
     next();
 };
-
